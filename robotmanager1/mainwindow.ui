@@ -28,8 +28,8 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>80</y>
-      <width>241</width>
+      <y>60</y>
+      <width>381</width>
       <height>20</height>
      </rect>
     </property>
@@ -38,7 +38,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>60</y>
+      <y>40</y>
       <width>81</width>
       <height>16</height>
      </rect>
@@ -63,8 +63,8 @@
    <widget class="QPushButton" name="send">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>110</y>
+      <x>420</x>
+      <y>60</y>
       <width>75</width>
       <height>23</height>
      </rect>
@@ -73,50 +73,30 @@
      <string>Отправить</string>
     </property>
    </widget>
-   <widget class="QComboBox" name="port">
+   <widget class="QLabel" name="mfn">
     <property name="geometry">
      <rect>
       <x>130</x>
-      <y>10</y>
-      <width>131</width>
-      <height>22</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_3">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>10</y>
-      <width>71</width>
+      <y>0</y>
+      <width>381</width>
       <height>21</height>
      </rect>
     </property>
     <property name="text">
-     <string>канал связи</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="podskazkifname">
-    <property name="geometry">
-     <rect>
-      <x>130</x>
-      <y>40</y>
-      <width>131</width>
-      <height>20</height>
-     </rect>
+     <string>не установлен</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
     <property name="geometry">
      <rect>
-      <x>20</x>
-      <y>40</y>
+      <x>10</x>
+      <y>0</y>
       <width>111</width>
-      <height>16</height>
+      <height>21</height>
      </rect>
     </property>
     <property name="text">
-     <string>Фаил с подсказками</string>
+     <string>Фаил с подсказками:</string>
     </property>
    </widget>
    <widget class="QPlainTextEdit" name="commands">
@@ -145,14 +125,66 @@
    <widget class="QPushButton" name="save">
     <property name="geometry">
      <rect>
-      <x>150</x>
-      <y>110</y>
+      <x>70</x>
+      <y>100</y>
       <width>111</width>
       <height>23</height>
      </rect>
     </property>
     <property name="text">
      <string>Сохранить данные</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>330</x>
+      <y>90</y>
+      <width>51</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Статус:</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="status">
+    <property name="geometry">
+     <rect>
+      <x>330</x>
+      <y>110</y>
+      <width>181</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Нет ошибок</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="clearOut">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>100</y>
+      <width>131</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Очистить поле вывода</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="setMainF">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>20</y>
+      <width>111</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Установить новый</string>
     </property>
    </widget>
   </widget>

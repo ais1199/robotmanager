@@ -3,6 +3,14 @@
 
 #include <QMainWindow>
 #include <QString>
+#include <vector>
+using namespace std;
+/*
+ * Не написно ничего по роботу - написать функцию приема
+ * Установить кодировку при чтении в поле подсказки
+ * Пофиксить пробелы (repaired, но не совсем)
+ * заставить команды принимать параметры
+ */
 namespace Ui {
 class MainWindow;
 }
@@ -14,19 +22,27 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
+public slots:
+    void sendt(QString);
 private:
     Ui::MainWindow *ui;
     QString BaseFN;//current base fname
     QString Port;//current port name
-    QString zapros;
-    QString otvet;
+    //QString zapros;
+    //QString otvet;
     char*makechar(const QString text)const;
     void save();//save function
-    void send();//send command to bot
-    void setBaseFile(QString);//change base fname
+    void send();//send command to bot при случае поставить убирание пробелов через  замену их на пустоту
+    void clear();
     void updCommands();//change commands list
-    void updOut();//upd output list
+    void updOut(QString);//upd output list
     void setPort();//set new port
+    void nm();
+    vector<char*> comlist;
+    void setBaseFile();//change base fname УКАЗАТЬ КОДИРОВКУ при чтении фаила QTextCodec
+    void repairProbels(char*s)const;
+    bool comFound(QString)const;
+    //bool instruct;
 };
 
 #endif // MAINWINDOW_H

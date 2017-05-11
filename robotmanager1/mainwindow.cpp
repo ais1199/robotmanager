@@ -9,6 +9,11 @@
 #include <QChar>
 #include <QLineEdit>
 
+#include <conio.h>
+
+//#include "C:\QTprogects\tmu\prog\lib\win\lib\popular.h"
+//#include "C:\QTprogects\tmu\prog\lib\common\rcproto\rcproto.h"
+
 //проблемы с вводом (изменением строк)
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -22,6 +27,34 @@ MainWindow::MainWindow(QWidget *parent) :
     //instruct=false;
     BaseFN=QString("");
     comlist.clear();
+    int r;
+    char portname[]="COM4";
+    //int i;
+    port = new TComPort(portname, 19200,r);
+    if(!r)printf("porterror((\n");
+    exit(0);
+    /*char inifile[]="C:/QTprogects/tmu/master.ini";
+    QFile f(inifile);
+    char* s,*comportname;
+      //RemStr = "#;";
+    //f=fopen(inifile,"r");
+      if(!f.open(QIODevice::ReadOnly))
+        printf("open ini file %s error\n", inifile);
+      else
+      {
+          if(!SkipRemarkLine(&f, comportname))
+            printf("format error 1\n");
+
+          if(!SkipRemarkLine(&f, s))
+            printf("format error 2\n");
+
+      }
+      printf("%s\n%s\n",comportname,s);
+      //int BaudRate = atoi(s);
+
+      //xbReadRobotAddr(f);
+
+      f.close();*/
 
     connect(ui->save,&QPushButton::clicked,this,&MainWindow::save);
     connect(ui->send,&QPushButton::clicked,this,&MainWindow::send);
@@ -30,6 +63,24 @@ MainWindow::MainWindow(QWidget *parent) :
     //connect(ui->vvod,SIGNAL(editingFinished()),this,&MainWindow::send);
     connect(ui->clearOut,&QPushButton::clicked,this,&MainWindow::clear);
 }
+
+bool MainWindow::SkipRemarkLine(QFile*f,char* res)const
+{
+    char buf[128];
+    while(!f->atEnd())
+    {
+        f->readLine(buf,128);
+        printf("%s\n",buf);
+        if((buf[0]!='#')&&(strlen(buf)!=0))
+        {
+            res=(char*)malloc(sizeof(char)+(strlen(buf)+1));
+            strcpy(res,buf);
+            return true;
+        }
+    }
+    return false;
+}
+
 //сохранить работу в файл
 void MainWindow::save()
 {
@@ -116,7 +167,7 @@ void MainWindow::sendt(QString txt)
             spesh=ol.replace(QString(" "),QString(""));
             if(comFound(spesh))
             {
-                res=spesh+QString(" :: ")+QString(" otvet\n");
+                res=spesh+QString(" :: ")+QString(" ответ\n");
                 updOut(res);
             }
             else
@@ -166,8 +217,12 @@ void MainWindow::setBaseFile()
     BaseFN=QFileDialog::getOpenFileName(this,"открыть файл с командами","",tr("Text files(*.txt)"));
     QFile f(BaseFN);
     char buf[128];
+    /*QIODevice *dev;
+    QTextStream stream(dev);
+    stream.setCodec("UTF-8");*/
     QString b;
     QString c;
+    QString v;
     char*nya;
     if(f.open(QIODevice::ReadOnly))
     {
@@ -184,7 +239,8 @@ void MainWindow::setBaseFile()
                repairProbels(nya);
                if(strlen(nya)!=0)
                {
-                   ui->commands->insertPlainText(b);
+                   v=QString(nya)+QString(" ::")+b.section(" ::",1);
+                   ui->commands->insertPlainText(v);
                    comlist.push_back(nya);
                }
            }
@@ -215,6 +271,11 @@ void MainWindow::updOut(QString res)
 void MainWindow::setPort()//set new port
 {
 
+}
+
+QString MainWindow::voprosOtvet(char*)const
+{
+    return QString("nichego");
 }
 
 MainWindow::~MainWindow()

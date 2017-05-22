@@ -27,7 +27,7 @@
    <widget class="QLineEdit" name="vvod">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>10</x>
       <y>60</y>
       <width>381</width>
       <height>20</height>
@@ -37,7 +37,7 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>10</x>
       <y>40</y>
       <width>81</width>
       <height>16</height>
@@ -63,9 +63,9 @@
    <widget class="QPushButton" name="send">
     <property name="geometry">
      <rect>
-      <x>420</x>
+      <x>410</x>
       <y>60</y>
-      <width>75</width>
+      <width>101</width>
       <height>23</height>
      </rect>
     </property>
@@ -83,7 +83,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>не установлен</string>
+     <string>Режим свободной связи</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_4">
@@ -177,7 +177,7 @@
    <widget class="QPushButton" name="setMainF">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>10</x>
       <y>20</y>
       <width>111</width>
       <height>21</height>
@@ -185,6 +185,60 @@
     </property>
     <property name="text">
      <string>Установить новый</string>
+    </property>
+   </widget>
+   <widget class="QComboBox" name="comboBox">
+    <property name="geometry">
+     <rect>
+      <x>240</x>
+      <y>30</y>
+      <width>161</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <item>
+     <property name="text">
+      <string>Не задан</string>
+     </property>
+    </item>
+   </widget>
+   <widget class="QLabel" name="label_3">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>30</y>
+      <width>31</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Порт:</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="updP">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>30</y>
+      <width>101</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Обновить порты</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="frer">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>20</y>
+      <width>75</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Сброс</string>
     </property>
    </widget>
   </widget>

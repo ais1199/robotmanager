@@ -1,6 +1,10 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+
+#include <stdio.h>
+#include <stdlib.h>
+
 #include <QMainWindow>
 #include <QString>
 #include <QFile>
@@ -27,28 +31,34 @@ public:
     ~MainWindow();
 public slots:
     void sendt(QString);
+    void setPort(QString);//set new port
 private:
+    //virtual void mousePressEvent();
     Ui::MainWindow *ui;
     QString BaseFN;//current base fname
     QString Port;//current port name
     //QString zapros;
     //QString otvet;
+    void updPortList();
     char*makechar(const QString text)const;
-    bool SkipRemarkLine(QFile*f,char* res)const;
     void save();//save function
     void send();//send command to bot при случае поставить убирание пробелов через  замену их на пустоту
     void clear();
     void updCommands();//change commands list
     void updOut(QString);//upd output list
-    void setPort();//set new port
     void nm();
     vector<char*> comlist;
+    //vector<char*>portlist;
     void setBaseFile();//change base fname УКАЗАТЬ КОДИРОВКУ при чтении фаила QTextCodec
     void repairProbels(char*s)const;
     bool comFound(QString)const;
     //bool instruct;
-    QString voprosOtvet(char*)const;
+    QString voprosOtvet(QString)const;
     TComPort *port;
+    bool plu;
+    bool sending;
+    void svobrej();
+    //void fork
 };
 
 #endif // MAINWINDOW_H

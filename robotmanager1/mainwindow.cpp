@@ -10,11 +10,20 @@
 #include <QLineEdit>
 
 #include <conio.h>
+//#include <sys/wait.h>
 
-//#include "C:\QTprogects\tmu\prog\lib\win\lib\popular.h"
-//#include "C:\QTprogects\tmu\prog\lib\common\rcproto\rcproto.h"
-
-//проблемы с вводом (изменением строк)
+/*
+ *замечание - чтение - кусок не более 32 символов
+ *замечание - в командах нельзя использовать пробелы, |, запятые и двоеточия
+ *замечание - при обновлении списка портов текущий порт автоматом сбрасывается
+ *замечание - принимает файлы только в утф8(наверное)
+ *проблема кодировки при чтении фаила(проще файл перевести в нужную кодировку)
+ *
+ *
+ *хотелось бы отсылать команды с параметрами
+ *хотелось бы сделать режим "одной клавиши"...но не в этот раз((
+ *хотелось бы, чтобы список портов обновлялся сам
+*/
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -27,58 +36,39 @@ MainWindow::MainWindow(QWidget *parent) :
     //instruct=false;
     BaseFN=QString("");
     comlist.clear();
-    int r;
-    char portname[]="COM4";
-    //int i;
-    port = new TComPort(portname, 19200,r);
-    if(!r)printf("porterror((\n");
-    exit(0);
-    /*char inifile[]="C:/QTprogects/tmu/master.ini";
-    QFile f(inifile);
-    char* s,*comportname;
-      //RemStr = "#;";
-    //f=fopen(inifile,"r");
-      if(!f.open(QIODevice::ReadOnly))
-        printf("open ini file %s error\n", inifile);
-      else
-      {
-          if(!SkipRemarkLine(&f, comportname))
-            printf("format error 1\n");
-
-          if(!SkipRemarkLine(&f, s))
-            printf("format error 2\n");
-
-      }
-      printf("%s\n%s\n",comportname,s);
-      //int BaudRate = atoi(s);
-
-      //xbReadRobotAddr(f);
-
-      f.close();*/
-
+    //portlist.clear();
+    port = NULL;
+    plu=false;
+    sending=false;
+    //if(!r)printf("porterror((\n");
+    updPortList();
+    //exit(0);
+    //ui->comboBox->ins
+    //QComboBox
+    connect(ui->comboBox,SIGNAL(currentIndexChanged(QString)),this,SLOT(setPort(QString)));
+    //connect(ui->comboBox,SIGNAL(highlighted(QString)),this,SLOT(setPort(QString)));
+    connect(ui->updP,&QPushButton::clicked,this,&MainWindow::updPortList);
     connect(ui->save,&QPushButton::clicked,this,&MainWindow::save);
     connect(ui->send,&QPushButton::clicked,this,&MainWindow::send);
     connect(ui->setMainF,&QPushButton::clicked,this,&MainWindow::setBaseFile);
     //connect(ui->podskazkifname,SIGNAL(editingFinished()),this,SLOT(setBaseFile(QString)));
-    //connect(ui->vvod,SIGNAL(editingFinished()),this,&MainWindow::send);
+    connect(ui->vvod,&QLineEdit::editingFinished,this,&MainWindow::send);
     connect(ui->clearOut,&QPushButton::clicked,this,&MainWindow::clear);
+    connect(ui->frer,&QPushButton::clicked,this,&MainWindow::svobrej);
 }
-
-bool MainWindow::SkipRemarkLine(QFile*f,char* res)const
+void MainWindow::svobrej()
 {
-    char buf[128];
-    while(!f->atEnd())
+    BaseFN.clear();
+    int s=comlist.size();
+    int i;
+    for (i=0;i<s;i++)
     {
-        f->readLine(buf,128);
-        printf("%s\n",buf);
-        if((buf[0]!='#')&&(strlen(buf)!=0))
-        {
-            res=(char*)malloc(sizeof(char)+(strlen(buf)+1));
-            strcpy(res,buf);
-            return true;
-        }
+        free(comlist[i]);
     }
-    return false;
+    comlist.clear();
+    ui->commands->clear();
+    ui->mfn->setText("Режим свободной связи");
+    nm();
 }
 
 //сохранить работу в файл
@@ -130,11 +120,10 @@ char* MainWindow::makechar(const QString text)const
 //отослать сигнал (сам добудь текст)
 void MainWindow::send()
 {
-    QString t=ui->vvod->text();
-    sendt(t);
+        QString t=ui->vvod->text();
+        sendt(t);
 }
-//отослать сигнал (дан текст)
-
+//найти команду
 bool MainWindow::comFound(QString txt) const
 {
     //char*d=makechar(txt);
@@ -148,13 +137,18 @@ bool MainWindow::comFound(QString txt) const
     }
     return false;
 }
+//отослать сигнал (дан текст)
 void MainWindow::sendt(QString txt)
 {
+    if(sending)return;
+    if(txt==QString(""))return;
+    sending=true;
+    QString spesh;
+    QString ol;
+    QString res=QString("нет команд");
     if(comlist.size()!=0)
     {
-        QString spesh;
-        QString ol;
-        QString res=QString("нет команд");
+
         //char*op;
         int j=txt.count(QString(", "));
         int i;
@@ -167,7 +161,9 @@ void MainWindow::sendt(QString txt)
             spesh=ol.replace(QString(" "),QString(""));
             if(comFound(spesh))
             {
-                res=spesh+QString(" :: ")+QString(" ответ\n");
+                nm();
+                QString otvet=voprosOtvet(spesh);
+                res=spesh+QString(" :: ")+otvet+QString("\n");
                 updOut(res);
             }
             else
@@ -187,9 +183,20 @@ void MainWindow::sendt(QString txt)
     }
     else
     {
-        QString s=QString("Не установлен Файл команд");
-        ui->status->setText(s);
+        int j=txt.count(QString(", "));
+        int i;
+        for(i=0;i<=j;i++)
+        {
+            ol=txt.section(", ",i,i);
+            spesh=ol.replace(QString(" "),QString(""));
+            nm();
+            QString otvet=voprosOtvet(spesh);
+            res=spesh+QString(" :: ")+otvet+QString("\n");
+            updOut(res);
+        }
+        ui->vvod->clear();
     }
+    sending=false;
 }
 //очистить поле вывода
 void MainWindow::clear()
@@ -217,12 +224,10 @@ void MainWindow::setBaseFile()
     BaseFN=QFileDialog::getOpenFileName(this,"открыть файл с командами","",tr("Text files(*.txt)"));
     QFile f(BaseFN);
     char buf[128];
-    /*QIODevice *dev;
-    QTextStream stream(dev);
-    stream.setCodec("UTF-8");*/
     QString b;
     QString c;
     QString v;
+    //QString aaa;
     char*nya;
     if(f.open(QIODevice::ReadOnly))
     {
@@ -255,30 +260,197 @@ void MainWindow::setBaseFile()
     }
     f.close();
 }
-//обновить список доступных команд
-/*void MainWindow::updCommands()
-{
 
-}*/
 //Обновить вывод
 void MainWindow::updOut(QString res)
 {
     //QString buf=zapros+QString(" :: ")+otvet;
     ui->result->insertPlainText(res);
+    //nm();
+}
+//set port
+void MainWindow::setPort(QString txt)//set new port
+{
+    if(plu)return ;
+    if(port!=NULL)
+    {
+        delete port;
+        port=NULL;
+    }
+    if(txt.contains(QString("COM")))
+    {
+        int r;
+        char *b=makechar(txt);
+        //TComPort *p=port;
+        if(port!=NULL)
+        {
+            delete port;
+            port=NULL;
+        }
+        port=new TComPort(b, 9600,r);
+        if(r)
+        {
+            /*char* imp=makechar(voprosOtvet(QString("")));
+            printf("%s/n",imp);
+            free(imp);
+            unsigned char otv;
+            if(port->Read(&otv))
+            {
+                printf("ok\n");
+            }
+            else{
+                char dd=(char)otv;
+                printf("%c\n",dd);
+            }*/
+            nm();
+        }
+        else
+        {
+            //potr=NULL;
+            printf("oshibka porta!(\n");
+            ui->status->setText(QString("Ошибка порта"));
+            port=NULL;
+        }
+    }
+    else
+    {
+        printf("port ne zadan\n");
+        ui->status->setText(QString("Порт не задан"));
+        port=NULL;
+    }
+
+}
+//write reqest & returns answer
+QString MainWindow::voprosOtvet(QString vopr)const
+{
+
+    QString aaa=vopr.replace(QString("|"),QString(""))+QString("|");
+
+    char*m=makechar(aaa);
+    if(port!=NULL)
+    {
+        int res=port->WriteData(m);
+        if(res!=0)
+        {
+            QString t=QString("Ошибка отправки в ")+QString(m)+QString(" в ")+QString(res);
+            ui->status->setText(t);
+            return QString("writing error");
+        }
+        else
+        {
+            QString rd=QString("");
+            unsigned char buf;
+            int i;
+            char uu;
+            for(i=0;i<32;i++)
+            {
+                if(!port->Read(&buf))
+                {
+
+                        ui->status->setText("Ошибка чтения");
+                        return QString("reading mistake");
+
+                }
+                else
+                {
+                    uu=(char)buf;
+                    if(uu=='\n')
+                    {
+                        rd=rd.replace(QString("/r/n"),QString(""));
+                        return rd;
+                    }
+                    rd.push_back(uu);
+
+                }
+            }
+        }
+
+    }
+    else
+    {
+        ui->status->setText("Порт не задан!");
+        return QString("port error");
+    }
+    return QString("long request");
+}
+//updates portlist
+void MainWindow::updPortList()
+{
+    plu=true;
+    TComPort *p;
+    //portlist.clear();
+    ui->comboBox->clear();
+    if(port!=NULL)
+    {
+        delete port;
+        port=NULL;
+    }
+    char text[6]="COM0\0";
+    int r;
+    int i;
+    //char *b;
+    for(i=1;i<10;i++)
+    {
+        text[3]=i+'0';
+        p=new TComPort(text, 19200,r);
+        if(r)
+        {
+            //printf("%s\n",text);
+            //b=(char*)malloc(sizeof(char)*5);
+            //strcpy(b,text);
+            //portlist.push_back(b);
+            ui->comboBox->insertItem(30,QString(text));
+        }
+        delete p;
+
+    }
+    text[3]='1';
+    text[4]='0';
+    text[5]='\0';
+    for(i=0;i<10;i++)
+    {
+        text[4]=i+'0';
+        p=new TComPort(text, 19200,r);
+        if(r)
+        {
+            //b=(char*)malloc(sizeof(char)*6);
+            //strcpy(b,text);
+            //portlist.push_back(b);
+            ui->comboBox->insertItem(30,QString(text));
+        }
+        delete p;
+
+    }
+    text[3]='2';
+    for(i=0;i<10;i++)
+    {
+        text[4]=i+'0';
+        p=new TComPort(text, 19200,r);
+        if(r)
+        {
+            //b=(char*)malloc(sizeof(char)*6);
+            //strcpy(b,text);
+            //portlist.push_back(b);
+            ui->comboBox->insertItem(30,QString(text));
+        }
+        delete p;
+    }
+    ui->comboBox->insertItem(0,QString("не задан"));
+    if(port==NULL)ui->comboBox->setCurrentIndex(0);
+    //delete p;
+    plu=false;
     nm();
-}
-
-void MainWindow::setPort()//set new port
-{
-
-}
-
-QString MainWindow::voprosOtvet(char*)const
-{
-    return QString("nichego");
 }
 
 MainWindow::~MainWindow()
 {
+    if(port!=NULL)delete port;
+    int s=comlist.size();
+    int i;
+    for (i=0;i<s;i++)
+    {
+        free(comlist[i]);
+    }
+    comlist.clear();
     delete ui;
 }
